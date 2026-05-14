@@ -246,6 +246,8 @@
             const data = snapshot.val();
             if (data) {
                 state = data;
+                state.checks = state.checks || {};
+                state.dates = state.dates || {};
                 if (state.photo) {
                     document.getElementById('profile-img').src = state.photo;
                     document.getElementById('profile-img').classList.remove('hidden');
