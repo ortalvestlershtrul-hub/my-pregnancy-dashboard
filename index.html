@@ -5,59 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מעקב הריון — אורטל וסטלר שטרול</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        
+
         :root {
-            --primary-color: #16a34a; 
+            --primary-color: #16a34a;
             --secondary-color: #0d9488;
             --bg-color: #f0fdf4;
             --card-bg: #ffffff;
             --text-main: #14532d;
         }
 
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-main); 
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
             overflow-x: hidden;
         }
-        
-        .hero-grad { 
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); 
+
+        .hero-grad {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         }
-        
-        .glass { 
-            background: rgba(255, 255, 255, 0.2); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
+
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
-        .card { 
-            background: var(--card-bg); 
-            border-radius: 24px; 
-            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.05); 
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.05);
             border: 1px solid #e2e8f0;
         }
 
-        .tab-active { 
-            background: var(--primary-color) !important; 
-            color: white !important; 
-            border-color: var(--primary-color) !important; 
+        .tab-active {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
         }
-        
-        .toast { 
-            position: fixed; 
-            bottom: 100px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 1000; 
-            transition: all 0.3s ease; 
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            transition: all 0.3s ease;
         }
 
         #profile-img { object-fit: cover; width: 100%; height: 100%; }
 
-        /* Custom Scrollbar for tabs */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -149,7 +150,7 @@
             <span class="text-xl text-green-600">✅</span>
             <h2 class="font-bold text-gray-800">בדיקות מעקב</h2>
         </div>
-        
+
         <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
             <button onclick="changeTab(0)" id="tab-0" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש ראשון</button>
             <button onclick="changeTab(1)" id="tab-1" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שני</button>
@@ -183,10 +184,22 @@
 </div>
 
 <script>
-    // Calculating LMP based on user input: Today (May 11, 2026) is week 11+5.
-    // 11*7 + 5 = 82 days. 
-    // May 11 - 82 days = Feb 18, 2026.
-    const LMP = new Date(2026, 1, 18); 
+    // Firebase setup
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZwI5fvPxj6DUq86J6rlDWiTSA0LBP38g",
+        authDomain: "ortal-pregnancy.firebaseapp.com",
+        databaseURL: "https://ortal-pregnancy-default-rtdb.firebaseio.com",
+        projectId: "ortal-pregnancy",
+        storageBucket: "ortal-pregnancy.firebasestorage.app",
+        messagingSenderId: "708827194379",
+        appId: "1:708827194379:web:a119448562f0ee8437d30e",
+        measurementId: "G-Z3HQ2X7VRX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const LMP = new Date(2026, 1, 18);
 
     const checksData = [
         [
@@ -223,25 +236,26 @@
 
     let activeTab = 0;
 
-
     function save() {
-        localStorage.setItem('pregnancy_state_ortal', JSON.stringify(state));
+        db.ref('ortal/state').set(state);
         showToast();
     }
 
     function load() {
-        const saved = localStorage.getItem('pregnancy_state_ortal');
-        if (saved) {
-            state = JSON.parse(saved);
-            if (state.photo) {
-                document.getElementById('profile-img').src = state.photo;
-                document.getElementById('profile-img').classList.remove('hidden');
-                document.getElementById('photo-placeholder').classList.add('hidden');
+        db.ref('ortal/state').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                state = data;
+                if (state.photo) {
+                    document.getElementById('profile-img').src = state.photo;
+                    document.getElementById('profile-img').classList.remove('hidden');
+                    document.getElementById('photo-placeholder').classList.add('hidden');
+                }
             }
-        }
-        updateStats();
-        changeTab(0);
-        renderSummary();
+            updateStats();
+            changeTab(activeTab);
+            renderSummary();
+        });
     }
 
     function showToast() {
@@ -254,16 +268,16 @@
         const now = new Date();
         const diffTime = now - LMP;
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
+
         const weeks = Math.floor(diffDays / 7);
         const days = diffDays % 7;
-        
+
         document.getElementById('stat-week').innerText = `${weeks}+${days}`;
-        
+
         const totalPregnancyDays = 280;
         const daysLeft = Math.max(0, totalPregnancyDays - diffDays);
         document.getElementById('stat-days').innerText = daysLeft;
-        
+
         const pct = Math.min(100, Math.floor((diffDays / totalPregnancyDays) * 100));
         document.getElementById('stat-pct').innerText = pct + '%';
         document.getElementById('progress-bar').style.width = pct + '%';
@@ -297,15 +311,15 @@
     function renderChecks() {
         const container = document.getElementById('checks-container');
         const list = checksData[activeTab];
-        
+
         container.innerHTML = list.map(c => {
             const isDone = state.checks[c.id] === 'done';
             const dateValue = state.dates[c.id] || '';
-            
+
             return `
                 <div class="flex flex-col p-4 rounded-2xl border border-green-50 bg-green-50/30 shadow-sm">
                     <div class="flex items-center gap-4 mb-3">
-                        <button onclick="toggleCheck('${c.id}')" 
+                        <button onclick="toggleCheck('${c.id}')"
                                 class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all shadow-sm
                                 ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-green-200 text-green-200'}">
                             ${isDone ? '✓' : ''}
@@ -319,12 +333,12 @@
                         </div>
                     </div>
                     <div class="flex gap-2 items-center">
-                        <input type="date" 
-                               onchange="updateDate('${c.id}', this.value)" 
+                        <input type="date"
+                               onchange="updateDate('${c.id}', this.value)"
                                value="${dateValue}"
                                class="flex-1 bg-white border border-green-100 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-green-500">
                         ${dateValue ? `
-                            <button onclick="addToCalendar('${c.name}', '${dateValue}')" 
+                            <button onclick="addToCalendar('${c.name}', '${dateValue}')"
                                     class="bg-blue-50 text-blue-600 p-2 rounded-xl text-lg hover:bg-blue-100 transition-colors" title="הוספה ליומן">📅</button>
                         ` : ''}
                     </div>
@@ -386,9 +400,8 @@
         reader.readAsDataURL(file);
     }
 
-
     async function callGemini(query, systemPrompt = "You are a helpful pregnancy assistant.") {
-        const apiKey = ""; // API Key handled by Canvas
+        const apiKey = "";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
         const payload = {
@@ -417,10 +430,10 @@
         const weekStr = document.getElementById('stat-week').innerText;
         box.classList.remove('hidden');
         box.innerHTML = `<div class="flex items-center gap-2 animate-pulse"><div class="w-2 h-2 bg-green-500 rounded-full"></div>אנחנו בודקים בגוגל מה קורה בשבוע ${weekStr}...</div>`;
-        
+
         const prompt = `תני לי 3 טיפים קצרים וחשובים לאורטל שנמצאת בשבוע ${weekStr} של ההריון. התמקדי בתזונה, תופעות לוואי ובריאות. תכתבי בעברית ידידותית.`;
         const response = await callGemini(prompt, "את מומחית הריון ולידה שנותנת טיפים מבוססי מחקר ומעודדים.");
-        
+
         box.innerHTML = `<div class="font-bold mb-2 border-b border-green-50 pb-1">תובנות לשבוע ${weekStr}:</div>` + response.replace(/\n/g, '<br>');
     }
 
@@ -446,11 +459,11 @@
 
         appendMessage('user', text);
         input.value = '';
-        
+
         document.getElementById('chat-loading').classList.remove('hidden');
         const response = await callGemini(text, "את העוזרת האישית של אורטל וסטלר שטרול בדשבורד ההריון שלה. תעני לה תמיד בעברית ובחום.");
         document.getElementById('chat-loading').classList.add('hidden');
-        
+
         appendMessage('ai', response);
     }
 
@@ -471,9 +484,9 @@
         if (document.getElementById('ai-chat-window').classList.contains('hidden')) toggleChat();
         appendMessage('ai', `אורטל, אני בודקת עבורך מה זה "${testName}"... 🔎`);
         document.getElementById('chat-loading').classList.remove('hidden');
-        
+
         const response = await callGemini(`תסבירי לי בקצרה מהי בדיקת "${testName}" בהריון.`, "את מומחית לליווי הריון.");
-        
+
         document.getElementById('chat-loading').classList.add('hidden');
         appendMessage('ai', response);
     }
@@ -496,7 +509,7 @@
             try {
                 const importedState = JSON.parse(e.target.result);
                 state = importedState;
-                localStorage.setItem('pregnancy_state_ortal', JSON.stringify(state));
+                db.ref('ortal/state').set(state);
                 location.reload();
             } catch (err) {
                 alert("קובץ הגיבוי לא תקין.");
@@ -507,7 +520,7 @@
 
     window.onload = function() {
         load();
-        setInterval(updateStats, 60000); // Update every minute
+        setInterval(updateStats, 60000);
     };
 </script>
 </body>
