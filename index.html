@@ -1,514 +1,514 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מעקב הריון — אורטל וסטלר שטרול</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        
-        :root {
-            --primary-color: #16a34a; 
-            --secondary-color: #0d9488;
-            --bg-color: #f0fdf4;
-            --card-bg: #ffffff;
-            --text-main: #14532d;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב הריון — אורטל וסטלר שטרול</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        :root {
+            --primary-color: #16a34a; 
+            --secondary-color: #0d9488;
+            --bg-color: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-main: #14532d;
+        }
 
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-main); 
-            overflow-x: hidden;
-        }
-        
-        .hero-grad { 
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); 
-        }
-        
-        .glass { 
-            background: rgba(255, 255, 255, 0.2); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-        }
-        
-        .card { 
-            background: var(--card-bg); 
-            border-radius: 24px; 
-            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.05); 
-            border: 1px solid #e2e8f0;
-        }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-main); 
+            overflow-x: hidden;
+        }
+        
+        .hero-grad { 
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); 
+        }
+        
+        .glass { 
+            background: rgba(255, 255, 255, 0.2); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+        }
+        
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 24px; 
+            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.05); 
+            border: 1px solid #e2e8f0;
+        }
 
-        .tab-active { 
-            background: var(--primary-color) !important; 
-            color: white !important; 
-            border-color: var(--primary-color) !important; 
-        }
-        
-        .toast { 
-            position: fixed; 
-            bottom: 100px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 1000; 
-            transition: all 0.3s ease; 
-        }
+        .tab-active { 
+            background: var(--primary-color) !important; 
+            color: white !important; 
+            border-color: var(--primary-color) !important; 
+        }
+        
+        .toast { 
+            position: fixed; 
+            bottom: 100px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 1000; 
+            transition: all 0.3s ease; 
+        }
 
-        #profile-img { object-fit: cover; width: 100%; height: 100%; }
+        #profile-img { object-fit: cover; width: 100%; height: 100%; }
 
-        /* Custom Scrollbar for tabs */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
+        /* Custom Scrollbar for tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body class="pb-24">
 
 <!-- AI Chat Window -->
 <div id="ai-chat-window" class="fixed bottom-24 left-5 right-5 bg-white rounded-3xl shadow-2xl border border-green-100 z-50 flex flex-col hidden transform transition-all duration-300 scale-95 opacity-0 overflow-hidden max-w-lg mx-auto h-[500px]">
-    <div class="hero-grad p-4 text-white flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl">✨</span>
-            <span class="font-bold">העוזרת האישית של אורטל</span>
-        </div>
-        <button onclick="toggleChat()" class="bg-white/20 hover:bg-white/40 p-2 rounded-full transition-colors">✕</button>
-    </div>
-    <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm bg-slate-50">
-        <div class="bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8">
-            היי אורטל! אני כאן לכל שאלה על ההיריון שלך. מה תרצי לדעת היום? 🌸
-        </div>
-    </div>
-    <div id="chat-loading" class="hidden px-4 py-2 text-xs text-green-600 font-bold animate-pulse">Gemini חושב ובוחן בגוגל...</div>
-    <div class="p-4 bg-white border-t border-slate-100 flex gap-2">
-        <input type="text" id="chat-input" placeholder="שאלי אותי משהו..." class="flex-1 border border-slate-200 rounded-2xl px-4 py-2 outline-none focus:border-green-500 text-sm">
-        <button onclick="sendMessage()" class="hero-grad text-white p-3 rounded-2xl shadow-lg">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </button>
-    </div>
+    <div class="hero-grad p-4 text-white flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">✨</span>
+            <span class="font-bold">העוזרת האישית של אורטל</span>
+        </div>
+        <button onclick="toggleChat()" class="bg-white/20 hover:bg-white/40 p-2 rounded-full transition-colors">✕</button>
+    </div>
+    <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm bg-slate-50">
+        <div class="bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8">
+            היי אורטל! אני כאן לכל שאלה על ההיריון שלך. מה תרצי לדעת היום? 🌸
+        </div>
+    </div>
+    <div id="chat-loading" class="hidden px-4 py-2 text-xs text-green-600 font-bold animate-pulse">Gemini חושב ובוחן בגוגל...</div>
+    <div class="p-4 bg-white border-t border-slate-100 flex gap-2">
+        <input type="text" id="chat-input" placeholder="שאלי אותי משהו..." class="flex-1 border border-slate-200 rounded-2xl px-4 py-2 outline-none focus:border-green-500 text-sm">
+        <button onclick="sendMessage()" class="hero-grad text-white p-3 rounded-2xl shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </button>
+    </div>
 </div>
 
 <!-- Floating AI Toggle -->
 <button onclick="toggleChat()" class="fixed bottom-6 left-6 hero-grad text-white w-14 h-14 rounded-full shadow-2xl z-40 flex items-center justify-center text-2xl border-4 border-white hover:scale-110 transition-transform">
-    ✨
+    ✨
 </button>
 
 <div id="toast" class="toast opacity-0 pointer-events-none bg-green-800 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">נשמר בהצלחה! ✨</div>
 
 <div class="hero-grad text-white pt-10 pb-16 px-6 rounded-b-[40px] shadow-xl relative overflow-hidden">
-    <div class="relative z-10 flex items-center gap-4 mb-8">
-        <div class="relative group">
-            <div id="photo-container" class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl border-2 border-white/50 overflow-hidden cursor-pointer" onclick="document.getElementById('photoInput').click()">
-                <span id="photo-placeholder">🤰</span>
-                <img id="profile-img" class="hidden" alt="פרופיל">
-            </div>
-            <input type="file" id="photoInput" class="hidden" accept="image/*" onchange="handlePhoto(event)">
-            <div class="absolute -bottom-1 -right-1 bg-white text-green-600 rounded-full p-1 text-[10px] shadow-md">📷</div>
-        </div>
-        <div>
-            <h1 class="text-xl font-extrabold leading-tight">אורטל וסטלר שטרול</h1>
-            <p class="text-white/80 text-xs">הדשבורד האישי שלי</p>
-        </div>
-    </div>
+    <div class="relative z-10 flex items-center gap-4 mb-8">
+        <div class="relative group">
+            <div id="photo-container" class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl border-2 border-white/50 overflow-hidden cursor-pointer" onclick="document.getElementById('photoInput').click()">
+                <span id="photo-placeholder">🤰</span>
+                <img id="profile-img" class="hidden" alt="פרופיל">
+            </div>
+            <input type="file" id="photoInput" class="hidden" accept="image/*" onchange="handlePhoto(event)">
+            <div class="absolute -bottom-1 -right-1 bg-white text-green-600 rounded-full p-1 text-[10px] shadow-md">📷</div>
+        </div>
+        <div>
+            <h1 class="text-xl font-extrabold leading-tight">אורטל וסטלר שטרול</h1>
+            <p class="text-white/80 text-xs">הדשבורד האישי שלי</p>
+        </div>
+    </div>
 
-    <div class="grid grid-cols-3 gap-3 relative z-10 text-center">
-        <div class="glass rounded-3xl p-4">
-            <div class="text-2xl font-black" id="stat-week">—</div>
-            <div class="text-[10px] uppercase font-bold opacity-80">שבוע</div>
-        </div>
-        <div class="glass rounded-3xl p-4">
-            <div class="text-2xl font-black" id="stat-days">—</div>
-            <div class="text-[10px] uppercase font-bold opacity-80">ימים ללידה</div>
-        </div>
-        <div class="glass rounded-3xl p-4">
-            <div class="text-2xl font-black text-yellow-300" id="stat-pct">0%</div>
-            <div class="text-[10px] uppercase font-bold opacity-80">זמן שעבר</div>
-        </div>
-    </div>
+    <div class="grid grid-cols-3 gap-3 relative z-10 text-center">
+        <div class="glass rounded-3xl p-4">
+            <div class="text-2xl font-black" id="stat-week">—</div>
+            <div class="text-[10px] uppercase font-bold opacity-80">שבוע</div>
+        </div>
+        <div class="glass rounded-3xl p-4">
+            <div class="text-2xl font-black" id="stat-days">—</div>
+            <div class="text-[10px] uppercase font-bold opacity-80">ימים ללידה</div>
+        </div>
+        <div class="glass rounded-3xl p-4">
+            <div class="text-2xl font-black text-yellow-300" id="stat-pct">0%</div>
+            <div class="text-[10px] uppercase font-bold opacity-80">זמן שעבר</div>
+        </div>
+    </div>
 </div>
 
 <div class="px-5 -mt-8 relative z-20 max-w-2xl mx-auto">
-    <!-- Progress Card -->
-    <div class="card p-6 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl">⏳</span>
-            <h2 class="font-bold text-gray-800">התקדמות ההיריון (לפי זמן)</h2>
-        </div>
-        <div class="w-full bg-green-50 h-3 rounded-full overflow-hidden mb-4">
-            <div id="progress-bar" class="h-full hero-grad transition-all duration-1000 ease-out" style="width: 0%"></div>
-        </div>
-        <div id="due-date-text" class="text-center text-sm font-bold text-green-800 bg-green-50 py-3 rounded-xl mb-3"></div>
-        <button onclick="generateInsights()" class="w-full py-2 px-4 bg-green-100 text-green-700 rounded-xl text-xs font-bold border border-green-200 hover:bg-green-200 transition-colors flex items-center justify-center gap-2">
-            <span>✨</span> ייצרי תובנות לשבוע שלי (AI)
-        </button>
-        <div id="insights-box" class="hidden mt-3 p-4 bg-white border-2 border-green-100 rounded-2xl text-xs leading-relaxed text-slate-700 animate-fade-in shadow-inner"></div>
-    </div>
+    <!-- Progress Card -->
+    <div class="card p-6 mb-4">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">⏳</span>
+            <h2 class="font-bold text-gray-800">התקדמות ההיריון (לפי זמן)</h2>
+        </div>
+        <div class="w-full bg-green-50 h-3 rounded-full overflow-hidden mb-4">
+            <div id="progress-bar" class="h-full hero-grad transition-all duration-1000 ease-out" style="width: 0%"></div>
+        </div>
+        <div id="due-date-text" class="text-center text-sm font-bold text-green-800 bg-green-50 py-3 rounded-xl mb-3"></div>
+        <button onclick="generateInsights()" class="w-full py-2 px-4 bg-green-100 text-green-700 rounded-xl text-xs font-bold border border-green-200 hover:bg-green-200 transition-colors flex items-center justify-center gap-2">
+            <span>✨</span> ייצרי תובנות לשבוע שלי (AI)
+        </button>
+        <div id="insights-box" class="hidden mt-3 p-4 bg-white border-2 border-green-100 rounded-2xl text-xs leading-relaxed text-slate-700 animate-fade-in shadow-inner"></div>
+    </div>
 
-    <!-- Tests Card -->
-    <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl text-green-600">✅</span>
-            <h2 class="font-bold text-gray-800">בדיקות מעקב</h2>
-        </div>
-        
-        <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="changeTab(0)" id="tab-0" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש ראשון</button>
-            <button onclick="changeTab(1)" id="tab-1" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שני</button>
-            <button onclick="changeTab(2)" id="tab-2" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שלישי</button>
-        </div>
+    <!-- Tests Card -->
+    <div class="card p-5 mb-4">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl text-green-600">✅</span>
+            <h2 class="font-bold text-gray-800">בדיקות מעקב</h2>
+        </div>
+        
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="changeTab(0)" id="tab-0" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש ראשון</button>
+            <button onclick="changeTab(1)" id="tab-1" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שני</button>
+            <button onclick="changeTab(2)" id="tab-2" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שלישי</button>
+        </div>
 
-        <div id="checks-container" class="space-y-4"></div>
-    </div>
+        <div id="checks-container" class="space-y-4"></div>
+    </div>
 
-    <!-- Summary Card -->
-    <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl text-teal-600">🗓️</span>
-            <h2 class="font-bold text-gray-800">סיכום תורים שלי</h2>
-        </div>
-        <div id="summary-container" class="space-y-3"></div>
-    </div>
+    <!-- Summary Card -->
+    <div class="card p-5 mb-4">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl text-teal-600">🗓️</span>
+            <h2 class="font-bold text-gray-800">סיכום תורים שלי</h2>
+        </div>
+        <div id="summary-container" class="space-y-3"></div>
+    </div>
 
-    <!-- Export/Import Actions -->
-    <div class="flex flex-col gap-3 mb-10">
-        <div class="flex gap-3">
-            <button onclick="exportData()" class="flex-1 bg-white border-2 border-green-200 text-green-700 py-3 rounded-2xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-green-50 transition-colors">
-                💾 גיבוי נתונים
-            </button>
-            <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-white border-2 border-blue-200 text-blue-700 py-3 rounded-2xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors">
-                📂 טעינת גיבוי
-            </button>
-        </div>
-        <input type="file" id="importFile" class="hidden" onchange="importData(event)">
-    </div>
+    <!-- Export/Import Actions -->
+    <div class="flex flex-col gap-3 mb-10">
+        <div class="flex gap-3">
+            <button onclick="exportData()" class="flex-1 bg-white border-2 border-green-200 text-green-700 py-3 rounded-2xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-green-50 transition-colors">
+                💾 גיבוי נתונים
+            </button>
+            <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-white border-2 border-blue-200 text-blue-700 py-3 rounded-2xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors">
+                📂 טעינת גיבוי
+            </button>
+        </div>
+        <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+    </div>
 </div>
 
 <script>
-    // Calculating LMP based on user input: Today (May 11, 2026) is week 11+5.
-    // 11*7 + 5 = 82 days. 
-    // May 11 - 82 days = Feb 18, 2026.
-    const LMP = new Date(2026, 1, 18); 
+    // Calculating LMP based on user input: Today (May 11, 2026) is week 11+5.
+    // 11*7 + 5 = 82 days. 
+    // May 11 - 82 days = Feb 18, 2026.
+    const LMP = new Date(2026, 1, 18); 
 
-    const checksData = [
-        [
-            {id: 't1_1', name:'בדיקת רופא ראשונה', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
-            {id: 't1_2', name:'בדיקות דם', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
-            {id: 't1_3', name:'בדיקות שתן', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
-            {id: 't1_4', name:'אולטרה סאונד ראשון', range:'שבועות 7-8', deadline:'08/04–21/04/2026'},
-            {id: 't1_5', name:'סקר נגטיות', range:'שבועות 0-13', deadline:'18/02–26/05/2026'},
-            {id: 't1_6', name:'שקיפות ערפית', range:'שבועות 11-13', deadline:'06/05–26/05/2026'},
-            {id: 't1_7', name:'סקר ביוכימי ראשון', range:'שבועות 11-13', deadline:'06/05–26/05/2026'},
-            {id: 't1_8', name:'סיסי שליה', range:'שבועות 11-13', deadline:'06/05–26/05/2026'}
-        ],
-        [
-            {id: 't2_1', name:'סקירה מוקדמת', range:'שבועות 14-16', deadline:'27/05–16/06/2026'},
-            {id: 't2_2', name:'סקר ביוכימי שני', range:'שבועות 16-19', deadline:'10/06–07/07/2026'},
-            {id: 't2_3', name:'דיקור מי שפיר', range:'שבועות 16-20', deadline:'10/06–14/07/2026'},
-            {id: 't2_4', name:'סקירה מאוחרת', range:'שבועות 21-24', deadline:'15/07–11/08/2026'},
-            {id: 't2_5', name:'אקו לב עוברי', range:'שבועות 19-25', deadline:'01/07–18/08/2026'},
-            {id: 't2_6', name:'העמסת סוכר', range:'שבועות 24-28', deadline:'05/08–08/09/2026'}
-        ],
-        [
-            {id: 't3_1', name:'חיסון נגד שעלת', range:'שבועות 27-36', deadline:'26/08–03/11/2026'},
-            {id: 't3_2', name:'אולטרה סאונד', range:'שבועות 30-33', deadline:'16/09–13/10/2026'},
-            {id: 't3_3', name:'תרבית GBS', range:'החל משבוע 35', deadline:'לאחר 21/10/2026'},
-            {id: 't3_4', name:'הריון עודף', range:'החל משבוע 40', deadline:'מ-25/11/2026'}
-        ]
-    ];
+    const checksData = [
+        [
+            {id: 't1_1', name:'בדיקת רופא ראשונה', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
+            {id: 't1_2', name:'בדיקות דם', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
+            {id: 't1_3', name:'בדיקות שתן', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
+            {id: 't1_4', name:'אולטרה סאונד ראשון', range:'שבועות 7-8', deadline:'08/04–21/04/2026'},
+            {id: 't1_5', name:'סקר נגטיות', range:'שבועות 0-13', deadline:'18/02–26/05/2026'},
+            {id: 't1_6', name:'שקיפות ערפית', range:'שבועות 11-13', deadline:'06/05–26/05/2026'},
+            {id: 't1_7', name:'סקר ביוכימי ראשון', range:'שבועות 11-13', deadline:'06/05–26/05/2026'},
+            {id: 't1_8', name:'סיסי שליה', range:'שבועות 11-13', deadline:'06/05–26/05/2026'}
+        ],
+        [
+            {id: 't2_1', name:'סקירה מוקדמת', range:'שבועות 14-16', deadline:'27/05–16/06/2026'},
+            {id: 't2_2', name:'סקר ביוכימי שני', range:'שבועות 16-19', deadline:'10/06–07/07/2026'},
+            {id: 't2_3', name:'דיקור מי שפיר', range:'שבועות 16-20', deadline:'10/06–14/07/2026'},
+            {id: 't2_4', name:'סקירה מאוחרת', range:'שבועות 21-24', deadline:'15/07–11/08/2026'},
+            {id: 't2_5', name:'אקו לב עוברי', range:'שבועות 19-25', deadline:'01/07–18/08/2026'},
+            {id: 't2_6', name:'העמסת סוכר', range:'שבועות 24-28', deadline:'05/08–08/09/2026'}
+        ],
+        [
+            {id: 't3_1', name:'חיסון נגד שעלת', range:'שבועות 27-36', deadline:'26/08–03/11/2026'},
+            {id: 't3_2', name:'אולטרה סאונד', range:'שבועות 30-33', deadline:'16/09–13/10/2026'},
+            {id: 't3_3', name:'תרבית GBS', range:'החל משבוע 35', deadline:'לאחר 21/10/2026'},
+            {id: 't3_4', name:'הריון עודף', range:'החל משבוע 40', deadline:'מ-25/11/2026'}
+        ]
+    ];
 
-    let state = {
-        checks: {},
-        dates: {},
-        photo: null
-    };
+    let state = {
+        checks: {},
+        dates: {},
+        photo: null
+    };
 
-    let activeTab = 0;
-
-
-    function save() {
-        localStorage.setItem('pregnancy_state_ortal', JSON.stringify(state));
-        showToast();
-    }
-
-    function load() {
-        const saved = localStorage.getItem('pregnancy_state_ortal');
-        if (saved) {
-            state = JSON.parse(saved);
-            if (state.photo) {
-                document.getElementById('profile-img').src = state.photo;
-                document.getElementById('profile-img').classList.remove('hidden');
-                document.getElementById('photo-placeholder').classList.add('hidden');
-            }
-        }
-        updateStats();
-        changeTab(0);
-        renderSummary();
-    }
-
-    function showToast() {
-        const t = document.getElementById('toast');
-        t.classList.remove('opacity-0', 'pointer-events-none');
-        setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 2000);
-    }
-
-    function updateStats() {
-        const now = new Date();
-        const diffTime = now - LMP;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        const weeks = Math.floor(diffDays / 7);
-        const days = diffDays % 7;
-        
-        document.getElementById('stat-week').innerText = `${weeks}+${days}`;
-        
-        const totalPregnancyDays = 280;
-        const daysLeft = Math.max(0, totalPregnancyDays - diffDays);
-        document.getElementById('stat-days').innerText = daysLeft;
-        
-        const pct = Math.min(100, Math.floor((diffDays / totalPregnancyDays) * 100));
-        document.getElementById('stat-pct').innerText = pct + '%';
-        document.getElementById('progress-bar').style.width = pct + '%';
-
-        const dueDate = new Date(LMP.getTime() + (totalPregnancyDays * 24 * 60 * 60 * 1000));
-        document.getElementById('due-date-text').innerText = `תאריך לידה משוער: ${dueDate.toLocaleDateString('he-IL')}`;
-    }
-
-    function changeTab(index) {
-        activeTab = index;
-        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-            if (i === index) btn.classList.add('tab-active');
-            else btn.classList.remove('tab-active');
-        });
-        renderChecks();
-    }
-
-    function toggleCheck(id) {
-        state.checks[id] = (state.checks[id] === 'done') ? 'none' : 'done';
-        save();
-        renderChecks();
-    }
-
-    function updateDate(id, val) {
-        state.dates[id] = val;
-        save();
-        renderSummary();
-        renderChecks();
-    }
-
-    function renderChecks() {
-        const container = document.getElementById('checks-container');
-        const list = checksData[activeTab];
-        
-        container.innerHTML = list.map(c => {
-            const isDone = state.checks[c.id] === 'done';
-            const dateValue = state.dates[c.id] || '';
-            
-            return `
-                <div class="flex flex-col p-4 rounded-2xl border border-green-50 bg-green-50/30 shadow-sm">
-                    <div class="flex items-center gap-4 mb-3">
-                        <button onclick="toggleCheck('${c.id}')" 
-                                class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all shadow-sm
-                                ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-green-200 text-green-200'}">
-                            ${isDone ? '✓' : ''}
-                        </button>
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-sm ${isDone ? 'line-through opacity-50' : ''}">${c.name}</h3>
-                                <button onclick="explainTest('${c.name}')" class="text-[10px] bg-white border border-green-100 text-green-600 px-2 py-1 rounded-full hover:bg-green-50 transition-colors">✨ מה זה?</button>
-                            </div>
-                            <p class="text-[11px] text-green-600 font-semibold">${c.range} · ${c.deadline}</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                        <input type="date" 
-                               onchange="updateDate('${c.id}', this.value)" 
-                               value="${dateValue}"
-                               class="flex-1 bg-white border border-green-100 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-green-500">
-                        ${dateValue ? `
-                            <button onclick="addToCalendar('${c.name}', '${dateValue}')" 
-                                    class="bg-blue-50 text-blue-600 p-2 rounded-xl text-lg hover:bg-blue-100 transition-colors" title="הוספה ליומן">📅</button>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function renderSummary() {
-        const container = document.getElementById('summary-container');
-        const appointments = [];
-
-        checksData.forEach(tab => {
-            tab.forEach(test => {
-                if (state.dates[test.id]) {
-                    appointments.push({
-                        name: test.name,
-                        date: state.dates[test.id]
-                    });
-                }
-            });
-        });
-
-        if (appointments.length === 0) {
-            container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">לא הוזנו תורים עדיין</p>`;
-            return;
-        }
-
-        appointments.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        container.innerHTML = appointments.map(appt => `
-            <div class="flex items-center justify-between bg-teal-50 p-3 rounded-xl border border-teal-100">
-                <div>
-                    <div class="font-bold text-xs text-teal-800">${appt.name}</div>
-                    <div class="text-[10px] text-teal-600">${new Date(appt.date).toLocaleDateString('he-IL')}</div>
-                </div>
-                <button onclick="addToCalendar('${appt.name}', '${appt.date}')" class="text-lg">📅</button>
-            </div>
-        `).join('');
-    }
-
-    function addToCalendar(name, date) {
-        const d = date.replace(/-/g, '');
-        const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('בדיקת הריון: ' + name)}&dates=${d}/${d}&details=מעקב הריון אורטל&sf=true&output=xml`;
-        window.open(url, '_blank');
-    }
-
-    function handlePhoto(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            state.photo = e.target.result;
-            document.getElementById('profile-img').src = state.photo;
-            document.getElementById('profile-img').classList.remove('hidden');
-            document.getElementById('photo-placeholder').classList.add('hidden');
-            save();
-        }
-        reader.readAsDataURL(file);
-    }
+    let activeTab = 0;
 
 
-    async function callGemini(query, systemPrompt = "You are a helpful pregnancy assistant.") {
-        const apiKey = ""; // API Key handled by Canvas
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+    function save() {
+        localStorage.setItem('pregnancy_state_ortal', JSON.stringify(state));
+        showToast();
+    }
 
-        const payload = {
-            contents: [{ parts: [{ text: query }] }],
-            tools: [{ "google_search": {} }],
-            systemInstruction: {
-                parts: [{ text: systemPrompt }]
-            }
-        };
+    function load() {
+        const saved = localStorage.getItem('pregnancy_state_ortal');
+        if (saved) {
+            state = JSON.parse(saved);
+            if (state.photo) {
+                document.getElementById('profile-img').src = state.photo;
+                document.getElementById('profile-img').classList.remove('hidden');
+                document.getElementById('photo-placeholder').classList.add('hidden');
+            }
+        }
+        updateStats();
+        changeTab(0);
+        renderSummary();
+    }
 
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-            return result.candidates?.[0]?.content?.parts?.[0]?.text || "מצטערת, משהו השתבש בחיבור לבינה המלאכותית.";
-        } catch (error) {
-            return "חלה שגיאה בתקשורת. ודאי שיש חיבור אינטרנט.";
-        }
-    }
+    function showToast() {
+        const t = document.getElementById('toast');
+        t.classList.remove('opacity-0', 'pointer-events-none');
+        setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 2000);
+    }
 
-    async function generateInsights() {
-        const box = document.getElementById('insights-box');
-        const weekStr = document.getElementById('stat-week').innerText;
-        box.classList.remove('hidden');
-        box.innerHTML = `<div class="flex items-center gap-2 animate-pulse"><div class="w-2 h-2 bg-green-500 rounded-full"></div>אנחנו בודקים בגוגל מה קורה בשבוע ${weekStr}...</div>`;
-        
-        const prompt = `תני לי 3 טיפים קצרים וחשובים לאורטל שנמצאת בשבוע ${weekStr} של ההריון. התמקדי בתזונה, תופעות לוואי ובריאות. תכתבי בעברית ידידותית.`;
-        const response = await callGemini(prompt, "את מומחית הריון ולידה שנותנת טיפים מבוססי מחקר ומעודדים.");
-        
-        box.innerHTML = `<div class="font-bold mb-2 border-b border-green-50 pb-1">תובנות לשבוע ${weekStr}:</div>` + response.replace(/\n/g, '<br>');
-    }
+    function updateStats() {
+        const now = new Date();
+        const diffTime = now - LMP;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        const weeks = Math.floor(diffDays / 7);
+        const days = diffDays % 7;
+        
+        document.getElementById('stat-week').innerText = `${weeks}+${days}`;
+        
+        const totalPregnancyDays = 280;
+        const daysLeft = Math.max(0, totalPregnancyDays - diffDays);
+        document.getElementById('stat-days').innerText = daysLeft;
+        
+        const pct = Math.min(100, Math.floor((diffDays / totalPregnancyDays) * 100));
+        document.getElementById('stat-pct').innerText = pct + '%';
+        document.getElementById('progress-bar').style.width = pct + '%';
 
-    function toggleChat() {
-        const win = document.getElementById('ai-chat-window');
-        if (win.classList.contains('hidden')) {
-            win.classList.remove('hidden');
-            setTimeout(() => {
-                win.classList.remove('opacity-0', 'scale-95');
-                win.classList.add('opacity-100', 'scale-100');
-            }, 10);
-        } else {
-            win.classList.remove('opacity-100', 'scale-100');
-            win.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => win.classList.add('hidden'), 300);
-        }
-    }
+        const dueDate = new Date(LMP.getTime() + (totalPregnancyDays * 24 * 60 * 60 * 1000));
+        document.getElementById('due-date-text').innerText = `תאריך לידה משוער: ${dueDate.toLocaleDateString('he-IL')}`;
+    }
 
-    async function sendMessage() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
+    function changeTab(index) {
+        activeTab = index;
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            if (i === index) btn.classList.add('tab-active');
+            else btn.classList.remove('tab-active');
+        });
+        renderChecks();
+    }
 
-        appendMessage('user', text);
-        input.value = '';
-        
-        document.getElementById('chat-loading').classList.remove('hidden');
-        const response = await callGemini(text, "את העוזרת האישית של אורטל וסטלר שטרול בדשבורד ההריון שלה. תעני לה תמיד בעברית ובחום.");
-        document.getElementById('chat-loading').classList.add('hidden');
-        
-        appendMessage('ai', response);
-    }
+    function toggleCheck(id) {
+        state.checks[id] = (state.checks[id] === 'done') ? 'none' : 'done';
+        save();
+        renderChecks();
+    }
 
-    function appendMessage(role, text) {
-        const container = document.getElementById('chat-messages');
-        const div = document.createElement('div');
-        if (role === 'user') {
-            div.className = "bg-white border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none mr-8 shadow-sm self-end";
-        } else {
-            div.className = "bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8 shadow-sm";
-        }
-        div.innerHTML = text.replace(/\n/g, '<br>');
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-    }
+    function updateDate(id, val) {
+        state.dates[id] = val;
+        save();
+        renderSummary();
+        renderChecks();
+    }
 
-    async function explainTest(testName) {
-        if (document.getElementById('ai-chat-window').classList.contains('hidden')) toggleChat();
-        appendMessage('ai', `אורטל, אני בודקת עבורך מה זה "${testName}"... 🔎`);
-        document.getElementById('chat-loading').classList.remove('hidden');
-        
-        const response = await callGemini(`תסבירי לי בקצרה מהי בדיקת "${testName}" בהריון.`, "את מומחית לליווי הריון.");
-        
-        document.getElementById('chat-loading').classList.add('hidden');
-        appendMessage('ai', response);
-    }
+    function renderChecks() {
+        const container = document.getElementById('checks-container');
+        const list = checksData[activeTab];
+        
+        container.innerHTML = list.map(c => {
+            const isDone = state.checks[c.id] === 'done';
+            const dateValue = state.dates[c.id] || '';
+            
+            return `
+                <div class="flex flex-col p-4 rounded-2xl border border-green-50 bg-green-50/30 shadow-sm">
+                    <div class="flex items-center gap-4 mb-3">
+                        <button onclick="toggleCheck('${c.id}')" 
+                                class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all shadow-sm
+                                ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-green-200 text-green-200'}">
+                            ${isDone ? '✓' : ''}
+                        </button>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-sm ${isDone ? 'line-through opacity-50' : ''}">${c.name}</h3>
+                                <button onclick="explainTest('${c.name}')" class="text-[10px] bg-white border border-green-100 text-green-600 px-2 py-1 rounded-full hover:bg-green-50 transition-colors">✨ מה זה?</button>
+                            </div>
+                            <p class="text-[11px] text-green-600 font-semibold">${c.range} · ${c.deadline}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <input type="date" 
+                               onchange="updateDate('${c.id}', this.value)" 
+                               value="${dateValue}"
+                               class="flex-1 bg-white border border-green-100 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-green-500">
+                        ${dateValue ? `
+                            <button onclick="addToCalendar('${c.name}', '${dateValue}')" 
+                                    class="bg-blue-50 text-blue-600 p-2 rounded-xl text-lg hover:bg-blue-100 transition-colors" title="הוספה ליומן">📅</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
-    function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "ortal_pregnancy_backup.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
+    function renderSummary() {
+        const container = document.getElementById('summary-container');
+        const appointments = [];
 
-    function importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedState = JSON.parse(e.target.result);
-                state = importedState;
-                localStorage.setItem('pregnancy_state_ortal', JSON.stringify(state));
-                location.reload();
-            } catch (err) {
-                alert("קובץ הגיבוי לא תקין.");
-            }
-        }
-        reader.readAsText(file);
-    }
+        checksData.forEach(tab => {
+            tab.forEach(test => {
+                if (state.dates[test.id]) {
+                    appointments.push({
+                        name: test.name,
+                        date: state.dates[test.id]
+                    });
+                }
+            });
+        });
 
-    window.onload = function() {
-        load();
-        setInterval(updateStats, 60000); // Update every minute
-    };
+        if (appointments.length === 0) {
+            container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">לא הוזנו תורים עדיין</p>`;
+            return;
+        }
+
+        appointments.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        container.innerHTML = appointments.map(appt => `
+            <div class="flex items-center justify-between bg-teal-50 p-3 rounded-xl border border-teal-100">
+                <div>
+                    <div class="font-bold text-xs text-teal-800">${appt.name}</div>
+                    <div class="text-[10px] text-teal-600">${new Date(appt.date).toLocaleDateString('he-IL')}</div>
+                </div>
+                <button onclick="addToCalendar('${appt.name}', '${appt.date}')" class="text-lg">📅</button>
+            </div>
+        `).join('');
+    }
+
+    function addToCalendar(name, date) {
+        const d = date.replace(/-/g, '');
+        const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('בדיקת הריון: ' + name)}&dates=${d}/${d}&details=מעקב הריון אורטל&sf=true&output=xml`;
+        window.open(url, '_blank');
+    }
+
+    function handlePhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            state.photo = e.target.result;
+            document.getElementById('profile-img').src = state.photo;
+            document.getElementById('profile-img').classList.remove('hidden');
+            document.getElementById('photo-placeholder').classList.add('hidden');
+            save();
+        }
+        reader.readAsDataURL(file);
+    }
+
+
+    async function callGemini(query, systemPrompt = "You are a helpful pregnancy assistant.") {
+        const apiKey = ""; // API Key handled by Canvas
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        const payload = {
+            contents: [{ parts: [{ text: query }] }],
+            tools: [{ "google_search": {} }],
+            systemInstruction: {
+                parts: [{ text: systemPrompt }]
+            }
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "מצטערת, משהו השתבש בחיבור לבינה המלאכותית.";
+        } catch (error) {
+            return "חלה שגיאה בתקשורת. ודאי שיש חיבור אינטרנט.";
+        }
+    }
+
+    async function generateInsights() {
+        const box = document.getElementById('insights-box');
+        const weekStr = document.getElementById('stat-week').innerText;
+        box.classList.remove('hidden');
+        box.innerHTML = `<div class="flex items-center gap-2 animate-pulse"><div class="w-2 h-2 bg-green-500 rounded-full"></div>אנחנו בודקים בגוגל מה קורה בשבוע ${weekStr}...</div>`;
+        
+        const prompt = `תני לי 3 טיפים קצרים וחשובים לאורטל שנמצאת בשבוע ${weekStr} של ההריון. התמקדי בתזונה, תופעות לוואי ובריאות. תכתבי בעברית ידידותית.`;
+        const response = await callGemini(prompt, "את מומחית הריון ולידה שנותנת טיפים מבוססי מחקר ומעודדים.");
+        
+        box.innerHTML = `<div class="font-bold mb-2 border-b border-green-50 pb-1">תובנות לשבוע ${weekStr}:</div>` + response.replace(/\n/g, '<br>');
+    }
+
+    function toggleChat() {
+        const win = document.getElementById('ai-chat-window');
+        if (win.classList.contains('hidden')) {
+            win.classList.remove('hidden');
+            setTimeout(() => {
+                win.classList.remove('opacity-0', 'scale-95');
+                win.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        } else {
+            win.classList.remove('opacity-100', 'scale-100');
+            win.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => win.classList.add('hidden'), 300);
+        }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        input.value = '';
+        
+        document.getElementById('chat-loading').classList.remove('hidden');
+        const response = await callGemini(text, "את העוזרת האישית של אורטל וסטלר שטרול בדשבורד ההריון שלה. תעני לה תמיד בעברית ובחום.");
+        document.getElementById('chat-loading').classList.add('hidden');
+        
+        appendMessage('ai', response);
+    }
+
+    function appendMessage(role, text) {
+        const container = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        if (role === 'user') {
+            div.className = "bg-white border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none mr-8 shadow-sm self-end";
+        } else {
+            div.className = "bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8 shadow-sm";
+        }
+        div.innerHTML = text.replace(/\n/g, '<br>');
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function explainTest(testName) {
+        if (document.getElementById('ai-chat-window').classList.contains('hidden')) toggleChat();
+        appendMessage('ai', `אורטל, אני בודקת עבורך מה זה "${testName}"... 🔎`);
+        document.getElementById('chat-loading').classList.remove('hidden');
+        
+        const response = await callGemini(`תסבירי לי בקצרה מהי בדיקת "${testName}" בהריון.`, "את מומחית לליווי הריון.");
+        
+        document.getElementById('chat-loading').classList.add('hidden');
+        appendMessage('ai', response);
+    }
+
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "ortal_pregnancy_backup.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                state = importedState;
+                localStorage.setItem('pregnancy_state_ortal', JSON.stringify(state));
+                location.reload();
+            } catch (err) {
+                alert("קובץ הגיבוי לא תקין.");
+            }
+        }
+        reader.readAsText(file);
+    }
+
+    window.onload = function() {
+        load();
+        setInterval(updateStats, 60000); // Update every minute
+    };
 </script>
 </body>
 </html>
