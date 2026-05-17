@@ -7,202 +7,406 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-
         :root {
-            --primary-color: #16a34a;
-            --secondary-color: #0d9488;
-            --bg-color: #f0fdf4;
-            --card-bg: #ffffff;
-            --text-main: #14532d;
+            --sage: #4ade80;
+            --sage-deep: #16a34a;
+            --teal: #2dd4bf;
+            --bg: #f8fffe;
+            --card: #ffffff;
+            --text: #0f2417;
+            --muted: #6b7280;
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        .hero-grad {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        /* Hero */
+        .hero {
+            background: linear-gradient(145deg, #065f46 0%, #0f766e 60%, #0d9488 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 280px; height: 280px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; left: -40px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        /* Photo area */
+        .photo-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 12px;
+            cursor: pointer;
+        }
+        .photo-ring {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.5);
+            overflow: hidden;
+            background: rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s;
+        }
+        .photo-wrapper:hover .photo-ring { border-color: rgba(255,255,255,0.9); }
+        .photo-placeholder-inner {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 4px; width: 100%; height: 100%;
+        }
+        .photo-placeholder-inner span.emoji { font-size: 36px; line-height: 1; }
+        .photo-placeholder-inner span.label {
+            font-size: 9px; font-weight: 700;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .photo-edit-badge {
+            position: absolute;
+            bottom: 2px; left: 2px;
+            background: white;
+            color: #059669;
+            border-radius: 50%;
+            width: 26px; height: 26px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.8);
         }
 
+        /* Stat chips */
+        .stat-chip {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+
+        /* Cards */
         .card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.05);
-            border: 1px solid #e2e8f0;
+            background: var(--card);
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(6,95,70,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid #e6f4ee;
         }
 
+        /* Tabs */
+        .tab-btn {
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border: 1.5px solid #d1fae5;
+            background: white;
+            color: #059669;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { background: #f0fdf4; }
         .tab-active {
-            background: var(--primary-color) !important;
+            background: #065f46 !important;
             color: white !important;
-            border-color: var(--primary-color) !important;
+            border-color: #065f46 !important;
         }
 
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            transition: all 0.3s ease;
+        /* Check items */
+        .check-item {
+            border-radius: 16px;
+            border: 1.5px solid #e6f4ee;
+            background: #fafffe;
+            padding: 16px;
+            transition: border-color 0.2s;
+        }
+        .check-item:hover { border-color: #a7f3d0; }
+        .check-item.done { background: #f0fdf4; }
+
+        .check-circle {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid #d1fae5;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        .check-circle.done {
+            background: linear-gradient(135deg, #065f46, #0d9488);
+            border-color: transparent;
+            color: white;
         }
 
-        #profile-img { object-fit: cover; width: 100%; height: 100%; }
+        /* Progress bar */
+        .progress-track {
+            background: #e6f4ee;
+            border-radius: 99px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #065f46, #0d9488, #2dd4bf);
+            height: 100%;
+            border-radius: 99px;
+            transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+        }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Date input */
+        .date-input {
+            border: 1.5px solid #d1fae5;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text);
+            background: white;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .date-input:focus { border-color: #059669; }
 
-        .add-check-form {
+        /* Badge */
+        .badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 99px;
+            background: #d1fae5;
+            color: #065f46;
+            letter-spacing: 0.02em;
+        }
+
+        /* Section label */
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+        }
+
+        /* Add form */
+        .add-form {
             background: #f0fdf4;
             border: 2px dashed #86efac;
             border-radius: 16px;
             padding: 16px;
-            margin-top: 12px;
         }
+        .add-form input {
+            width: 100%;
+            border: 1.5px solid #d1fae5;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            outline: none;
+            background: white;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+        .add-form input:focus { border-color: #059669; }
+
+        /* Appt card */
+        .appt-card {
+            background: linear-gradient(135deg, #f0fdfa, #f0fdf4);
+            border: 1.5px solid #ccfbf1;
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            transition: opacity 0.3s ease;
+            background: #065f46;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(6,95,70,0.3);
+            white-space: nowrap;
+        }
+
+        /* Photo */
+        #profile-img { object-fit: cover; width: 100%; height: 100%; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Btn */
+        .btn-primary {
+            background: linear-gradient(135deg, #065f46, #0d9488);
+            color: white;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .btn-ghost {
+            background: white;
+            border: 1.5px solid #d1fae5;
+            color: #059669;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-ghost:hover { background: #f0fdf4; }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-28">
 
-<!-- AI Chat Window -->
-<div id="ai-chat-window" class="fixed bottom-24 left-5 right-5 bg-white rounded-3xl shadow-2xl border border-green-100 z-50 flex flex-col hidden transform transition-all duration-300 scale-95 opacity-0 overflow-hidden max-w-lg mx-auto h-[500px]">
-    <div class="hero-grad p-4 text-white flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl">✨</span>
-            <span class="font-bold">העוזרת האישית של אורטל</span>
-        </div>
-        <button onclick="toggleChat()" class="bg-white/20 hover:bg-white/40 p-2 rounded-full transition-colors">✕</button>
-    </div>
-    <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm bg-slate-50">
-        <div class="bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8">
-            היי אורטל! אני כאן לכל שאלה על ההיריון שלך. מה תרצי לדעת היום? 🌸
-        </div>
-    </div>
-    <div id="chat-loading" class="hidden px-4 py-2 text-xs text-green-600 font-bold animate-pulse">Gemini חושב ובוחן בגוגל...</div>
-    <div class="p-4 bg-white border-t border-slate-100 flex gap-2">
-        <input type="text" id="chat-input" placeholder="שאלי אותי משהו..." class="flex-1 border border-slate-200 rounded-2xl px-4 py-2 outline-none focus:border-green-500 text-sm" onkeydown="if(event.key==='Enter') sendMessage()">
-        <button onclick="sendMessage()" class="hero-grad text-white p-3 rounded-2xl shadow-lg">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </button>
-    </div>
-</div>
+<div id="toast" class="toast opacity-0 pointer-events-none">נשמר בהצלחה ✓</div>
 
-<!-- Floating AI Toggle -->
-<button onclick="toggleChat()" class="fixed bottom-6 left-6 hero-grad text-white w-14 h-14 rounded-full shadow-2xl z-40 flex items-center justify-center text-2xl border-4 border-white hover:scale-110 transition-transform">
-    ✨
-</button>
+<!-- Hero -->
+<div class="hero text-white pt-12 pb-20 px-6 rounded-b-[36px] shadow-xl">
+    <div class="relative z-10 max-w-lg mx-auto">
 
-<div id="toast" class="toast opacity-0 pointer-events-none bg-green-800 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">נשמר בהצלחה! ✨</div>
-
-<div class="hero-grad text-white pt-10 pb-16 px-6 rounded-b-[40px] shadow-xl relative overflow-hidden">
-    <div class="relative z-10 flex items-center gap-4 mb-8">
-        <div class="relative group">
-            <div id="photo-container" class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl border-2 border-white/50 overflow-hidden cursor-pointer" onclick="document.getElementById('photoInput').click()">
-                <span id="photo-placeholder">🤰</span>
-                <img id="profile-img" class="hidden" alt="פרופיל">
+        <!-- Profile -->
+        <div class="text-center mb-8">
+            <div class="photo-wrapper" onclick="document.getElementById('photoInput').click()">
+                <div class="photo-ring" id="photo-ring">
+                    <div class="photo-placeholder-inner" id="photo-placeholder-wrap">
+                        <span class="emoji">🤰</span>
+                        <span class="label">הוסיפי תמונה</span>
+                    </div>
+                    <img id="profile-img" class="hidden w-full h-full object-cover" alt="פרופיל">
+                </div>
+                <div class="photo-edit-badge">📷</div>
             </div>
             <input type="file" id="photoInput" class="hidden" accept="image/*" onchange="handlePhoto(event)">
-            <div class="absolute -bottom-1 -right-1 bg-white text-green-600 rounded-full p-1 text-[10px] shadow-md">📷</div>
+            <p class="text-white/50 text-[10px] font-semibold uppercase tracking-widest mb-2">My Personal Dashboard</p>
+            <h1 class="text-2xl font-extrabold tracking-tight mb-1">Pregnancy Tracking Dashboard</h1>
+            <p class="text-white/50 text-[11px] font-medium">Ortal Vestler Shtrul</p>
         </div>
-        <div>
-            <h1 class="text-xl font-extrabold leading-tight">אורטל וסטלר שטרול</h1>
-            <p class="text-white/80 text-xs">הדשבורד האישי שלי</p>
-        </div>
-    </div>
 
-    <div class="grid grid-cols-3 gap-3 relative z-10 text-center">
-        <div class="glass rounded-3xl p-4">
-            <div class="text-2xl font-black" id="stat-week">—</div>
-            <div class="text-[10px] uppercase font-bold opacity-80">שבוע</div>
-        </div>
-        <div class="glass rounded-3xl p-4">
-            <div class="text-2xl font-black" id="stat-days">—</div>
-            <div class="text-[10px] uppercase font-bold opacity-80">ימים ללידה</div>
-        </div>
-        <div class="glass rounded-3xl p-4">
-            <div class="text-2xl font-black text-yellow-300" id="stat-pct">0%</div>
-            <div class="text-[10px] uppercase font-bold opacity-80">זמן שעבר</div>
+        <!-- Stats row -->
+        <div class="grid grid-cols-3 gap-3">
+            <div class="stat-chip">
+                <div class="text-2xl font-black tracking-tight" id="stat-week">—</div>
+                <div class="text-[10px] font-semibold text-white/60 mt-0.5">שבוע</div>
+            </div>
+            <div class="stat-chip">
+                <div class="text-2xl font-black tracking-tight" id="stat-days">—</div>
+                <div class="text-[10px] font-semibold text-white/60 mt-0.5">ימים ללידה</div>
+            </div>
+            <div class="stat-chip">
+                <div class="text-2xl font-black tracking-tight text-emerald-300" id="stat-pct">0%</div>
+                <div class="text-[10px] font-semibold text-white/60 mt-0.5">הושלם</div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="px-5 -mt-8 relative z-20 max-w-2xl mx-auto">
+<!-- Content -->
+<div class="px-5 -mt-10 relative z-10 max-w-lg mx-auto space-y-4">
+
     <!-- Progress Card -->
-    <div class="card p-6 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl">⏳</span>
-            <h2 class="font-bold text-gray-800">התקדמות ההיריון (לפי זמן)</h2>
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <span class="text-lg">🌱</span>
+                <span class="font-bold text-sm text-gray-800">התקדמות ההיריון</span>
+            </div>
+            <span id="stat-pct-badge" class="badge">0%</span>
         </div>
-        <div class="w-full bg-green-50 h-3 rounded-full overflow-hidden mb-4">
-            <div id="progress-bar" class="h-full hero-grad transition-all duration-1000 ease-out" style="width: 0%"></div>
+        <div class="progress-track mb-3">
+            <div id="progress-bar" class="progress-fill" style="width:0%"></div>
         </div>
-        <div id="due-date-text" class="text-center text-sm font-bold text-green-800 bg-green-50 py-3 rounded-xl mb-3"></div>
-        <button onclick="generateInsights()" class="w-full py-2 px-4 bg-green-100 text-green-700 rounded-xl text-xs font-bold border border-green-200 hover:bg-green-200 transition-colors flex items-center justify-center gap-2">
-            <span>✨</span> ייצרי תובנות לשבוע שלי (AI)
-        </button>
-        <div id="insights-box" class="hidden mt-3 p-4 bg-white border-2 border-green-100 rounded-2xl text-xs leading-relaxed text-slate-700 shadow-inner"></div>
+        <div id="due-date-text" class="text-center text-xs font-semibold text-emerald-700 bg-emerald-50 py-2.5 rounded-xl border border-emerald-100"></div>
     </div>
 
-    <!-- Tests Card -->
-    <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl text-green-600">✅</span>
-            <h2 class="font-bold text-gray-800">בדיקות מעקב</h2>
+    <!-- Checks Card -->
+    <div class="card p-5">
+        <div class="flex items-center gap-2 mb-5">
+            <span class="text-lg">✅</span>
+            <span class="font-bold text-sm text-gray-800">בדיקות מעקב</span>
         </div>
 
-        <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="changeTab(0)" id="tab-0" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש ראשון</button>
-            <button onclick="changeTab(1)" id="tab-1" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שני</button>
-            <button onclick="changeTab(2)" id="tab-2" class="tab-btn px-4 py-2 rounded-full text-xs font-bold border-2 border-green-100 transition-all whitespace-nowrap bg-white">שליש שלישי</button>
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-5 overflow-x-auto pb-1 no-scrollbar">
+            <button onclick="changeTab(0)" id="tab-0" class="tab-btn tab-active">שליש א׳</button>
+            <button onclick="changeTab(1)" id="tab-1" class="tab-btn">שליש ב׳</button>
+            <button onclick="changeTab(2)" id="tab-2" class="tab-btn">שליש ג׳</button>
         </div>
 
-        <div id="checks-container" class="space-y-4"></div>
+        <div id="checks-container" class="space-y-3"></div>
 
-        <!-- Add custom check -->
-        <div id="add-check-form" class="add-check-form hidden mt-4">
-            <p class="text-xs font-bold text-green-700 mb-3">הוספת בדיקה חדשה</p>
-            <input id="new-check-name" type="text" placeholder="שם הבדיקה *" class="w-full border border-green-200 rounded-xl px-3 py-2 text-xs mb-2 outline-none focus:border-green-500">
-            <input id="new-check-range" type="text" placeholder="טווח שבועות (לדוגמה: שבועות 12-14)" class="w-full border border-green-200 rounded-xl px-3 py-2 text-xs mb-2 outline-none focus:border-green-500">
-            <input id="new-check-deadline" type="text" placeholder="דדליין (לדוגמה: עד 01/06/2026)" class="w-full border border-green-200 rounded-xl px-3 py-2 text-xs mb-3 outline-none focus:border-green-500">
+        <!-- Add form -->
+        <div id="add-check-form" class="add-form hidden mt-4">
+            <p class="text-xs font-bold text-emerald-700 mb-3">הוספת בדיקה לשליש זה</p>
+            <input id="new-check-name" type="text" placeholder="שם הבדיקה *">
+            <input id="new-check-range" type="text" placeholder="טווח שבועות (לדוגמה: שבועות 12-14)">
+            <input id="new-check-deadline" type="text" placeholder="דדליין (לדוגמה: עד 01/06/2026)" style="margin-bottom:12px">
             <div class="flex gap-2">
-                <button onclick="saveNewCheck()" class="flex-1 hero-grad text-white py-2 rounded-xl text-xs font-bold">שמירה</button>
-                <button onclick="toggleAddForm()" class="flex-1 bg-white border border-green-200 text-green-700 py-2 rounded-xl text-xs font-bold">ביטול</button>
+                <button onclick="saveNewCheck()" class="btn-primary flex-1">שמירה</button>
+                <button onclick="toggleAddForm()" class="btn-ghost flex-1">ביטול</button>
             </div>
         </div>
 
-        <button onclick="toggleAddForm()" class="w-full mt-4 py-2 px-4 bg-green-50 text-green-600 rounded-xl text-xs font-bold border-2 border-dashed border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
-            + הוספת בדיקה לשליש זה
+        <button onclick="toggleAddForm()"
+                class="w-full mt-4 py-2.5 text-xs font-bold text-emerald-600 border-2 border-dashed border-emerald-200 rounded-2xl hover:bg-emerald-50 transition-colors">
+            + הוספת בדיקה
         </button>
     </div>
 
-    <!-- Summary Card -->
-    <div class="card p-5 mb-4">
+    <!-- Appointments Card -->
+    <div class="card p-5">
         <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl text-teal-600">🗓️</span>
-            <h2 class="font-bold text-gray-800">סיכום תורים שלי</h2>
+            <span class="text-lg">🗓️</span>
+            <span class="font-bold text-sm text-gray-800">התורים שלי</span>
         </div>
-        <div id="summary-container" class="space-y-3"></div>
+        <div id="summary-container" class="space-y-2.5"></div>
     </div>
 
-    <!-- Export/Import Actions -->
-    <div class="flex flex-col gap-3 mb-10">
-        <div class="flex gap-3">
-            <button onclick="exportData()" class="flex-1 bg-white border-2 border-green-200 text-green-700 py-3 rounded-2xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-green-50 transition-colors">
-                💾 גיבוי נתונים
-            </button>
-            <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-white border-2 border-blue-200 text-blue-700 py-3 rounded-2xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors">
-                📂 טעינת גיבוי
-            </button>
-        </div>
+    <!-- Actions -->
+    <div class="flex gap-3 pb-4">
+        <button onclick="exportData()"
+                class="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-emerald-100 text-emerald-700 py-3 rounded-2xl text-xs font-bold hover:bg-emerald-50 transition-colors shadow-sm">
+            💾 גיבוי
+        </button>
+        <button onclick="document.getElementById('importFile').click()"
+                class="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-blue-100 text-blue-600 py-3 rounded-2xl text-xs font-bold hover:bg-blue-50 transition-colors shadow-sm">
+            📂 טעינת גיבוי
+        </button>
         <input type="file" id="importFile" class="hidden" onchange="importData(event)">
     </div>
 </div>
@@ -222,44 +426,36 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const GROQ_API_KEY = "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";
-
     const LMP = new Date(2026, 1, 18);
 
     const checksData = [
         [
-            {id: 't1_1', name:'בדיקת רופא ראשונה', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
-            {id: 't1_2', name:'בדיקות דם', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
-            {id: 't1_3', name:'בדיקות שתן', range:'עד שבוע 12', deadline:'עד 19/05/2026'},
-            {id: 't1_4', name:'אולטרה סאונד ראשון', range:'שבועות 7-8', deadline:'08/04–21/04/2026'},
-            {id: 't1_5', name:'סקר נגטיות', range:'שבועות 0-13', deadline:'18/02–26/05/2026'},
-            {id: 't1_6', name:'שקיפות ערפית', range:'שבועות 11-13', deadline:'06/05–26/05/2026'},
-            {id: 't1_7', name:'סקר ביוכימי ראשון', range:'שבועות 11-13', deadline:'06/05–26/05/2026'},
-            {id: 't1_8', name:'סיסי שליה', range:'שבועות 11-13', deadline:'06/05–26/05/2026'}
+            {id:'t1_1', name:'בדיקת רופא ראשונה',    range:'עד שבוע 12',       deadline:'עד 19/05/2026'},
+            {id:'t1_2', name:'בדיקות דם',             range:'עד שבוע 12',       deadline:'עד 19/05/2026'},
+            {id:'t1_3', name:'בדיקות שתן',            range:'עד שבוע 12',       deadline:'עד 19/05/2026'},
+            {id:'t1_4', name:'אולטרה סאונד ראשון',   range:'שבועות 7–8',       deadline:'08/04–21/04/2026'},
+            {id:'t1_5', name:'סקר נגטיות',            range:'שבועות 0–13',      deadline:'18/02–26/05/2026'},
+            {id:'t1_6', name:'שקיפות ערפית',          range:'שבועות 11–13',     deadline:'06/05–26/05/2026'},
+            {id:'t1_7', name:'סקר ביוכימי ראשון',     range:'שבועות 11–13',     deadline:'06/05–26/05/2026'},
+            {id:'t1_8', name:'סיסי שליה',             range:'שבועות 11–13',     deadline:'06/05–26/05/2026'}
         ],
         [
-            {id: 't2_1', name:'סקירה מוקדמת', range:'שבועות 14-16', deadline:'27/05–16/06/2026'},
-            {id: 't2_2', name:'סקר ביוכימי שני', range:'שבועות 16-19', deadline:'10/06–07/07/2026'},
-            {id: 't2_3', name:'דיקור מי שפיר', range:'שבועות 16-20', deadline:'10/06–14/07/2026'},
-            {id: 't2_4', name:'סקירה מאוחרת', range:'שבועות 21-24', deadline:'15/07–11/08/2026'},
-            {id: 't2_5', name:'אקו לב עוברי', range:'שבועות 19-25', deadline:'01/07–18/08/2026'},
-            {id: 't2_6', name:'העמסת סוכר', range:'שבועות 24-28', deadline:'05/08–08/09/2026'}
+            {id:'t2_1', name:'סקירה מוקדמת',          range:'שבועות 14–16',     deadline:'27/05–16/06/2026'},
+            {id:'t2_2', name:'סקר ביוכימי שני',       range:'שבועות 16–19',     deadline:'10/06–07/07/2026'},
+            {id:'t2_3', name:'דיקור מי שפיר',         range:'שבועות 16–20',     deadline:'10/06–14/07/2026'},
+            {id:'t2_4', name:'סקירה מאוחרת',          range:'שבועות 21–24',     deadline:'15/07–11/08/2026'},
+            {id:'t2_5', name:'אקו לב עוברי',          range:'שבועות 19–25',     deadline:'01/07–18/08/2026'},
+            {id:'t2_6', name:'העמסת סוכר',            range:'שבועות 24–28',     deadline:'05/08–08/09/2026'}
         ],
         [
-            {id: 't3_1', name:'חיסון נגד שעלת', range:'שבועות 27-36', deadline:'26/08–03/11/2026'},
-            {id: 't3_2', name:'אולטרה סאונד', range:'שבועות 30-33', deadline:'16/09–13/10/2026'},
-            {id: 't3_3', name:'תרבית GBS', range:'החל משבוע 35', deadline:'לאחר 21/10/2026'},
-            {id: 't3_4', name:'הריון עודף', range:'החל משבוע 40', deadline:'מ-25/11/2026'}
+            {id:'t3_1', name:'חיסון נגד שעלת',        range:'שבועות 27–36',     deadline:'26/08–03/11/2026'},
+            {id:'t3_2', name:'אולטרה סאונד',          range:'שבועות 30–33',     deadline:'16/09–13/10/2026'},
+            {id:'t3_3', name:'תרבית GBS',             range:'החל משבוע 35',     deadline:'לאחר 21/10/2026'},
+            {id:'t3_4', name:'הריון עודף',            range:'החל משבוע 40',     deadline:'מ-25/11/2026'}
         ]
     ];
 
-    let state = {
-        checks: {},
-        dates: {},
-        photo: null,
-        customChecks: { 0: [], 1: [], 2: [] }
-    };
-
+    let state = { checks: {}, dates: {}, photo: null, customChecks: {0:[],1:[],2:[]} };
     let activeTab = 0;
 
     function save() {
@@ -268,20 +464,18 @@
     }
 
     function load() {
-        db.ref('ortal/state').on('value', (snapshot) => {
+        db.ref('ortal/state').on('value', snapshot => {
             const data = snapshot.val();
             if (data) {
                 state = data;
                 state.checks = state.checks || {};
-                state.dates = state.dates || {};
-                state.customChecks = state.customChecks || { 0: [], 1: [], 2: [] };
-                state.customChecks[0] = state.customChecks[0] || [];
-                state.customChecks[1] = state.customChecks[1] || [];
-                state.customChecks[2] = state.customChecks[2] || [];
+                state.dates  = state.dates  || {};
+                state.customChecks = state.customChecks || {0:[],1:[],2:[]};
+                [0,1,2].forEach(i => state.customChecks[i] = state.customChecks[i] || []);
                 if (state.photo) {
                     document.getElementById('profile-img').src = state.photo;
                     document.getElementById('profile-img').classList.remove('hidden');
-                    document.getElementById('photo-placeholder').classList.add('hidden');
+                    document.getElementById('photo-placeholder-wrap').classList.add('hidden');
                 }
             }
             updateStats();
@@ -292,324 +486,195 @@
 
     function showToast() {
         const t = document.getElementById('toast');
-        t.classList.remove('opacity-0', 'pointer-events-none');
-        setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 2000);
+        t.classList.remove('opacity-0','pointer-events-none');
+        setTimeout(() => t.classList.add('opacity-0','pointer-events-none'), 2000);
     }
 
     function updateStats() {
-        const now = new Date();
-        const diffTime = now - LMP;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
+        const diffDays = Math.floor((new Date() - LMP) / 86400000);
         const weeks = Math.floor(diffDays / 7);
-        const days = diffDays % 7;
+        const days  = diffDays % 7;
+        const total = 280;
+        const left  = Math.max(0, total - diffDays);
+        const pct   = Math.min(100, Math.floor((diffDays / total) * 100));
 
         document.getElementById('stat-week').innerText = `${weeks}+${days}`;
+        document.getElementById('stat-days').innerText  = left;
+        document.getElementById('stat-pct').innerText   = pct + '%';
+        document.getElementById('stat-pct-badge').innerText = pct + '%';
+        document.getElementById('progress-bar').style.width  = pct + '%';
 
-        const totalPregnancyDays = 280;
-        const daysLeft = Math.max(0, totalPregnancyDays - diffDays);
-        document.getElementById('stat-days').innerText = daysLeft;
-
-        const pct = Math.min(100, Math.floor((diffDays / totalPregnancyDays) * 100));
-        document.getElementById('stat-pct').innerText = pct + '%';
-        document.getElementById('progress-bar').style.width = pct + '%';
-
-        const dueDate = new Date(LMP.getTime() + (totalPregnancyDays * 24 * 60 * 60 * 1000));
-        document.getElementById('due-date-text').innerText = `תאריך לידה משוער: ${dueDate.toLocaleDateString('he-IL')}`;
+        const due = new Date(LMP.getTime() + total * 86400000);
+        document.getElementById('due-date-text').innerText =
+            `תאריך לידה משוער: ${due.toLocaleDateString('he-IL')}`;
     }
 
     function changeTab(index) {
         activeTab = index;
         document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-            if (i === index) btn.classList.add('tab-active');
-            else btn.classList.remove('tab-active');
+            btn.classList.toggle('tab-active', i === index);
         });
         document.getElementById('add-check-form').classList.add('hidden');
         renderChecks();
     }
 
     function toggleCheck(id) {
-        state.checks[id] = (state.checks[id] === 'done') ? 'none' : 'done';
-        save();
-        renderChecks();
+        state.checks[id] = state.checks[id] === 'done' ? 'none' : 'done';
+        save(); renderChecks();
     }
 
     function updateDate(id, val) {
         state.dates[id] = val;
-        save();
-        renderSummary();
-        renderChecks();
+        save(); renderSummary(); renderChecks();
     }
 
     function toggleAddForm() {
         const form = document.getElementById('add-check-form');
         form.classList.toggle('hidden');
         if (!form.classList.contains('hidden')) {
-            document.getElementById('new-check-name').value = '';
-            document.getElementById('new-check-range').value = '';
-            document.getElementById('new-check-deadline').value = '';
+            ['new-check-name','new-check-range','new-check-deadline']
+                .forEach(id => document.getElementById(id).value = '');
             document.getElementById('new-check-name').focus();
         }
     }
 
     function saveNewCheck() {
         const name = document.getElementById('new-check-name').value.trim();
-        if (!name) {
-            document.getElementById('new-check-name').focus();
-            return;
-        }
-        const range = document.getElementById('new-check-range').value.trim();
+        if (!name) { document.getElementById('new-check-name').focus(); return; }
+        const range    = document.getElementById('new-check-range').value.trim();
         const deadline = document.getElementById('new-check-deadline').value.trim();
         const id = 'custom_' + Date.now();
-
         state.customChecks[activeTab].push({ id, name, range, deadline });
-        save();
-        toggleAddForm();
-        renderChecks();
+        save(); toggleAddForm(); renderChecks();
     }
 
     function deleteCustomCheck(id) {
         state.customChecks[activeTab] = state.customChecks[activeTab].filter(c => c.id !== id);
-        save();
-        renderChecks();
+        save(); renderChecks();
     }
 
     function renderCheckItem(c, isCustom) {
-        const isDone = (state.checks[c.id]) === 'done';
-        const dateValue = (state.dates[c.id]) || '';
+        const done = state.checks[c.id] === 'done';
+        const dateVal = state.dates[c.id] || '';
+        const meta = [c.range, c.deadline].filter(Boolean).join(' · ');
 
         return `
-            <div class="flex flex-col p-4 rounded-2xl border border-green-50 bg-green-50/30 shadow-sm">
-                <div class="flex items-center gap-4 mb-3">
-                    <button onclick="toggleCheck('${c.id}')"
-                            class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all shadow-sm flex-shrink-0
-                            ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-green-200 text-green-200'}">
-                        ${isDone ? '✓' : ''}
-                    </button>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between gap-2">
-                            <h3 class="font-bold text-sm ${isDone ? 'line-through opacity-50' : ''} truncate">${c.name}</h3>
-                            <div class="flex gap-1 flex-shrink-0">
-                                <button onclick="explainTest('${c.name}')" class="text-[10px] bg-white border border-green-100 text-green-600 px-2 py-1 rounded-full hover:bg-green-50 transition-colors">✨ מה זה?</button>
-                                ${isCustom ? `<button onclick="deleteCustomCheck('${c.id}')" class="text-[10px] bg-red-50 border border-red-100 text-red-400 px-2 py-1 rounded-full hover:bg-red-100 transition-colors">✕</button>` : ''}
-                            </div>
-                        </div>
-                        <p class="text-[11px] text-green-600 font-semibold">${c.range}${c.range && c.deadline ? ' · ' : ''}${c.deadline}</p>
+        <div class="check-item ${done ? 'done' : ''}">
+            <div class="flex items-start gap-3 mb-3">
+                <button onclick="toggleCheck('${c.id}')" class="check-circle ${done ? 'done' : ''} mt-0.5">
+                    ${done ? '✓' : ''}
+                </button>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="font-semibold text-sm ${done ? 'line-through text-gray-400' : 'text-gray-800'} truncate">${c.name}</p>
+                        ${isCustom ? `<button onclick="deleteCustomCheck('${c.id}')" class="text-[10px] text-red-400 hover:text-red-600 flex-shrink-0 px-2 py-0.5 rounded-full border border-red-100 hover:border-red-300 transition-colors">✕</button>` : ''}
                     </div>
-                </div>
-                <div class="flex gap-2 items-center">
-                    <input type="date"
-                           onchange="updateDate('${c.id}', this.value)"
-                           value="${dateValue}"
-                           class="flex-1 bg-white border border-green-100 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-green-500">
-                    ${dateValue ? `
-                        <button onclick="addToCalendar('${c.name}', '${dateValue}')"
-                                class="bg-blue-50 text-blue-600 p-2 rounded-xl text-lg hover:bg-blue-100 transition-colors" title="הוספה ליומן">📅</button>
-                    ` : ''}
+                    ${meta ? `<p class="text-[11px] text-emerald-600 font-medium mt-0.5">${meta}</p>` : ''}
                 </div>
             </div>
-        `;
+            <div class="flex gap-2 items-center pr-10">
+                <input type="date" onchange="updateDate('${c.id}', this.value)" value="${dateVal}" class="date-input">
+                ${dateVal ? `<button onclick="addToCalendar('${c.name}','${dateVal}')" class="bg-blue-50 text-blue-500 p-2 rounded-xl text-base hover:bg-blue-100 transition-colors flex-shrink-0" title="הוספה ליומן">📅</button>` : ''}
+            </div>
+        </div>`;
+    }
+
+    function parseDeadlineDate(deadline) {
+        if (!deadline) return null;
+        // extract first dd/mm/yyyy occurrence
+        const match = deadline.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (!match) return null;
+        return new Date(`${match[3]}-${match[2]}-${match[1]}`);
     }
 
     function renderChecks() {
         const container = document.getElementById('checks-container');
-        const builtIn = checksData[activeTab];
-        const custom = state.customChecks[activeTab] || [];
+        const builtIn = checksData[activeTab].map(c => ({ ...c, isCustom: false }));
+        const custom  = (state.customChecks[activeTab] || []).map(c => ({ ...c, isCustom: true }));
 
-        const builtInHTML = builtIn.map(c => renderCheckItem(c, false)).join('');
-        const customHTML = custom.length > 0
-            ? `<div class="border-t border-green-100 pt-3 mt-1">
-                <p class="text-[10px] text-green-500 font-bold uppercase mb-3">בדיקות שהוספת</p>
-                ${custom.map(c => renderCheckItem(c, true)).join('')}
-               </div>`
-            : '';
+        const all = [...builtIn, ...custom].sort((a, b) => {
+            const da = parseDeadlineDate(a.deadline);
+            const db = parseDeadlineDate(b.deadline);
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return da - db;
+        });
 
-        container.innerHTML = builtInHTML + customHTML;
+        container.innerHTML = all.map(c => renderCheckItem(c, c.isCustom)).join('');
     }
 
     function renderSummary() {
         const container = document.getElementById('summary-container');
-        const appointments = [];
+        const appts = [];
 
-        checksData.forEach(tab => {
-            tab.forEach(test => {
-                if (state.dates[test.id]) {
-                    appointments.push({ name: test.name, date: state.dates[test.id] });
-                }
-            });
-        });
+        checksData.forEach(tab => tab.forEach(t => {
+            if (state.dates[t.id]) appts.push({ name: t.name, date: state.dates[t.id] });
+        }));
+        Object.values(state.customChecks || {}).forEach(tab =>
+            (tab || []).forEach(t => {
+                if (state.dates[t.id]) appts.push({ name: t.name, date: state.dates[t.id] });
+            })
+        );
 
-        Object.values(state.customChecks || {}).forEach(tabChecks => {
-            (tabChecks || []).forEach(test => {
-                if (state.dates[test.id]) {
-                    appointments.push({ name: test.name, date: state.dates[test.id] });
-                }
-            });
-        });
-
-        if (appointments.length === 0) {
-            container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">לא הוזנו תורים עדיין</p>`;
+        if (!appts.length) {
+            container.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">לא הוזנו תורים עדיין</p>`;
             return;
         }
 
-        appointments.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        container.innerHTML = appointments.map(appt => `
-            <div class="flex items-center justify-between bg-teal-50 p-3 rounded-xl border border-teal-100">
+        appts.sort((a, b) => new Date(a.date) - new Date(b.date));
+        container.innerHTML = appts.map(a => `
+            <div class="appt-card">
                 <div>
-                    <div class="font-bold text-xs text-teal-800">${appt.name}</div>
-                    <div class="text-[10px] text-teal-600">${new Date(appt.date).toLocaleDateString('he-IL')}</div>
+                    <p class="font-bold text-xs text-gray-800">${a.name}</p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">${new Date(a.date).toLocaleDateString('he-IL')}</p>
                 </div>
-                <button onclick="addToCalendar('${appt.name}', '${appt.date}')" class="text-lg">📅</button>
-            </div>
-        `).join('');
+                <button onclick="addToCalendar('${a.name}','${a.date}')" class="text-xl hover:scale-110 transition-transform">📅</button>
+            </div>`).join('');
     }
 
     function addToCalendar(name, date) {
-        const d = date.replace(/-/g, '');
-        const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('בדיקת הריון: ' + name)}&dates=${d}/${d}&details=מעקב הריון אורטל&sf=true&output=xml`;
-        window.open(url, '_blank');
+        const d = date.replace(/-/g,'');
+        window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('בדיקת הריון: '+name)}&dates=${d}/${d}&details=מעקב הריון אורטל&sf=true&output=xml`,'_blank');
     }
 
     function handlePhoto(event) {
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             state.photo = e.target.result;
             document.getElementById('profile-img').src = state.photo;
             document.getElementById('profile-img').classList.remove('hidden');
-            document.getElementById('photo-placeholder').classList.add('hidden');
+            document.getElementById('photo-placeholder-wrap').classList.add('hidden');
             save();
-        }
+        };
         reader.readAsDataURL(file);
     }
 
-    async function callGemini(query, systemPrompt = "You are a helpful pregnancy assistant.") {
-        const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
-
-        const payload = {
-            model: "llama-3.3-70b-versatile",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: query }
-            ]
-        };
-
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GROQ_API_KEY}`
-                },
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-            if (result.error) return `שגיאה: ${result.error.message}`;
-            return result.choices?.[0]?.message?.content || "מצטערת, משהו השתבש בחיבור לבינה המלאכותית.";
-        } catch (error) {
-            return "חלה שגיאה בתקשורת. ודאי שיש חיבור אינטרנט.";
-        }
-    }
-
-    async function generateInsights() {
-        const box = document.getElementById('insights-box');
-        const weekStr = document.getElementById('stat-week').innerText;
-        box.classList.remove('hidden');
-        box.innerHTML = `<div class="flex items-center gap-2 animate-pulse"><div class="w-2 h-2 bg-green-500 rounded-full"></div>בודקת מה קורה בשבוע ${weekStr}...</div>`;
-
-        const prompt = `תני לי 3 טיפים קצרים וחשובים לאורטל שנמצאת בשבוע ${weekStr} של ההריון. התמקדי בתזונה, תופעות לוואי ובריאות. תכתבי בעברית ידידותית.`;
-        const response = await callGemini(prompt, "את מומחית הריון ולידה שנותנת טיפים מבוססי מחקר ומעודדים.");
-
-        box.innerHTML = `<div class="font-bold mb-2 border-b border-green-50 pb-1">תובנות לשבוע ${weekStr}:</div>` + response.replace(/\n/g, '<br>');
-    }
-
-    function toggleChat() {
-        const win = document.getElementById('ai-chat-window');
-        if (win.classList.contains('hidden')) {
-            win.classList.remove('hidden');
-            setTimeout(() => {
-                win.classList.remove('opacity-0', 'scale-95');
-                win.classList.add('opacity-100', 'scale-100');
-            }, 10);
-        } else {
-            win.classList.remove('opacity-100', 'scale-100');
-            win.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => win.classList.add('hidden'), 300);
-        }
-    }
-
-    async function sendMessage() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
-
-        appendMessage('user', text);
-        input.value = '';
-
-        document.getElementById('chat-loading').classList.remove('hidden');
-        const response = await callGemini(text, "את העוזרת האישית של אורטל וסטלר שטרול בדשבורד ההריון שלה. תעני לה תמיד בעברית ובחום.");
-        document.getElementById('chat-loading').classList.add('hidden');
-
-        appendMessage('ai', response);
-    }
-
-    function appendMessage(role, text) {
-        const container = document.getElementById('chat-messages');
-        const div = document.createElement('div');
-        if (role === 'user') {
-            div.className = "bg-white border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none mr-8 shadow-sm";
-        } else {
-            div.className = "bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8 shadow-sm";
-        }
-        div.innerHTML = text.replace(/\n/g, '<br>');
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-    }
-
-    async function explainTest(testName) {
-        if (document.getElementById('ai-chat-window').classList.contains('hidden')) toggleChat();
-        appendMessage('ai', `אורטל, אני בודקת עבורך מה זה "${testName}"... 🔎`);
-        document.getElementById('chat-loading').classList.remove('hidden');
-
-        const response = await callGemini(`תסבירי לי בקצרה מהי בדיקת "${testName}" בהריון. תכתבי בעברית ובאופן ידידותי.`, "את מומחית לליווי הריון.");
-
-        document.getElementById('chat-loading').classList.add('hidden');
-        appendMessage('ai', response);
-    }
-
     function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-        const a = document.createElement('a');
-        a.setAttribute("href", dataStr);
-        a.setAttribute("download", "ortal_pregnancy_backup.json");
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        const a = Object.assign(document.createElement('a'), {
+            href: "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state)),
+            download: "ortal_pregnancy_backup.json"
+        });
+        document.body.appendChild(a); a.click(); a.remove();
     }
 
     function importData(event) {
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             try {
-                const importedState = JSON.parse(e.target.result);
-                state = importedState;
+                state = JSON.parse(e.target.result);
                 db.ref('ortal/state').set(state);
                 location.reload();
-            } catch (err) {
-                alert("קובץ הגיבוי לא תקין.");
-            }
-        }
+            } catch { alert("קובץ הגיבוי לא תקין."); }
+        };
         reader.readAsText(file);
     }
 
-    window.onload = function() {
-        load();
-        setInterval(updateStats, 60000);
-    };
+    window.onload = () => { load(); setInterval(updateStats, 60000); };
 </script>
 </body>
 </html>
