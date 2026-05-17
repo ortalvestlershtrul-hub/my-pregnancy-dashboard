@@ -61,6 +61,14 @@
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .add-check-form {
+            background: #f0fdf4;
+            border: 2px dashed #86efac;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+        }
     </style>
 </head>
 <body class="pb-24">
@@ -81,7 +89,7 @@
     </div>
     <div id="chat-loading" class="hidden px-4 py-2 text-xs text-green-600 font-bold animate-pulse">Gemini חושב ובוחן בגוגל...</div>
     <div class="p-4 bg-white border-t border-slate-100 flex gap-2">
-        <input type="text" id="chat-input" placeholder="שאלי אותי משהו..." class="flex-1 border border-slate-200 rounded-2xl px-4 py-2 outline-none focus:border-green-500 text-sm">
+        <input type="text" id="chat-input" placeholder="שאלי אותי משהו..." class="flex-1 border border-slate-200 rounded-2xl px-4 py-2 outline-none focus:border-green-500 text-sm" onkeydown="if(event.key==='Enter') sendMessage()">
         <button onclick="sendMessage()" class="hero-grad text-white p-3 rounded-2xl shadow-lg">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         </button>
@@ -141,7 +149,7 @@
         <button onclick="generateInsights()" class="w-full py-2 px-4 bg-green-100 text-green-700 rounded-xl text-xs font-bold border border-green-200 hover:bg-green-200 transition-colors flex items-center justify-center gap-2">
             <span>✨</span> ייצרי תובנות לשבוע שלי (AI)
         </button>
-        <div id="insights-box" class="hidden mt-3 p-4 bg-white border-2 border-green-100 rounded-2xl text-xs leading-relaxed text-slate-700 animate-fade-in shadow-inner"></div>
+        <div id="insights-box" class="hidden mt-3 p-4 bg-white border-2 border-green-100 rounded-2xl text-xs leading-relaxed text-slate-700 shadow-inner"></div>
     </div>
 
     <!-- Tests Card -->
@@ -158,6 +166,22 @@
         </div>
 
         <div id="checks-container" class="space-y-4"></div>
+
+        <!-- Add custom check -->
+        <div id="add-check-form" class="add-check-form hidden mt-4">
+            <p class="text-xs font-bold text-green-700 mb-3">הוספת בדיקה חדשה</p>
+            <input id="new-check-name" type="text" placeholder="שם הבדיקה *" class="w-full border border-green-200 rounded-xl px-3 py-2 text-xs mb-2 outline-none focus:border-green-500">
+            <input id="new-check-range" type="text" placeholder="טווח שבועות (לדוגמה: שבועות 12-14)" class="w-full border border-green-200 rounded-xl px-3 py-2 text-xs mb-2 outline-none focus:border-green-500">
+            <input id="new-check-deadline" type="text" placeholder="דדליין (לדוגמה: עד 01/06/2026)" class="w-full border border-green-200 rounded-xl px-3 py-2 text-xs mb-3 outline-none focus:border-green-500">
+            <div class="flex gap-2">
+                <button onclick="saveNewCheck()" class="flex-1 hero-grad text-white py-2 rounded-xl text-xs font-bold">שמירה</button>
+                <button onclick="toggleAddForm()" class="flex-1 bg-white border border-green-200 text-green-700 py-2 rounded-xl text-xs font-bold">ביטול</button>
+            </div>
+        </div>
+
+        <button onclick="toggleAddForm()" class="w-full mt-4 py-2 px-4 bg-green-50 text-green-600 rounded-xl text-xs font-bold border-2 border-dashed border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
+            + הוספת בדיקה לשליש זה
+        </button>
     </div>
 
     <!-- Summary Card -->
@@ -184,7 +208,6 @@
 </div>
 
 <script>
-    // Firebase setup
     const firebaseConfig = {
         apiKey: "AIzaSyCZwI5fvPxj6DUq86J6rlDWiTSA0LBP38g",
         authDomain: "ortal-pregnancy.firebaseapp.com",
@@ -198,6 +221,8 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    const GROQ_API_KEY = "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";
 
     const LMP = new Date(2026, 1, 18);
 
@@ -231,7 +256,8 @@
     let state = {
         checks: {},
         dates: {},
-        photo: null
+        photo: null,
+        customChecks: { 0: [], 1: [], 2: [] }
     };
 
     let activeTab = 0;
@@ -248,6 +274,10 @@
                 state = data;
                 state.checks = state.checks || {};
                 state.dates = state.dates || {};
+                state.customChecks = state.customChecks || { 0: [], 1: [], 2: [] };
+                state.customChecks[0] = state.customChecks[0] || [];
+                state.customChecks[1] = state.customChecks[1] || [];
+                state.customChecks[2] = state.customChecks[2] || [];
                 if (state.photo) {
                     document.getElementById('profile-img').src = state.photo;
                     document.getElementById('profile-img').classList.remove('hidden');
@@ -294,6 +324,7 @@
             if (i === index) btn.classList.add('tab-active');
             else btn.classList.remove('tab-active');
         });
+        document.getElementById('add-check-form').classList.add('hidden');
         renderChecks();
     }
 
@@ -310,43 +341,90 @@
         renderChecks();
     }
 
-    function renderChecks() {
-        const container = document.getElementById('checks-container');
-        const list = checksData[activeTab];
+    function toggleAddForm() {
+        const form = document.getElementById('add-check-form');
+        form.classList.toggle('hidden');
+        if (!form.classList.contains('hidden')) {
+            document.getElementById('new-check-name').value = '';
+            document.getElementById('new-check-range').value = '';
+            document.getElementById('new-check-deadline').value = '';
+            document.getElementById('new-check-name').focus();
+        }
+    }
 
-        container.innerHTML = list.map(c => {
-            const isDone = state.checks[c.id] === 'done';
-            const dateValue = state.dates[c.id] || '';
+    function saveNewCheck() {
+        const name = document.getElementById('new-check-name').value.trim();
+        if (!name) {
+            document.getElementById('new-check-name').focus();
+            return;
+        }
+        const range = document.getElementById('new-check-range').value.trim();
+        const deadline = document.getElementById('new-check-deadline').value.trim();
+        const id = 'custom_' + Date.now();
 
-            return `
-                <div class="flex flex-col p-4 rounded-2xl border border-green-50 bg-green-50/30 shadow-sm">
-                    <div class="flex items-center gap-4 mb-3">
-                        <button onclick="toggleCheck('${c.id}')"
-                                class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all shadow-sm
-                                ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-green-200 text-green-200'}">
-                            ${isDone ? '✓' : ''}
-                        </button>
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-sm ${isDone ? 'line-through opacity-50' : ''}">${c.name}</h3>
+        state.customChecks[activeTab].push({ id, name, range, deadline });
+        save();
+        toggleAddForm();
+        renderChecks();
+    }
+
+    function deleteCustomCheck(id) {
+        state.customChecks[activeTab] = state.customChecks[activeTab].filter(c => c.id !== id);
+        save();
+        renderChecks();
+    }
+
+    function renderCheckItem(c, isCustom) {
+        const isDone = (state.checks[c.id]) === 'done';
+        const dateValue = (state.dates[c.id]) || '';
+
+        return `
+            <div class="flex flex-col p-4 rounded-2xl border border-green-50 bg-green-50/30 shadow-sm">
+                <div class="flex items-center gap-4 mb-3">
+                    <button onclick="toggleCheck('${c.id}')"
+                            class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all shadow-sm flex-shrink-0
+                            ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-green-200 text-green-200'}">
+                        ${isDone ? '✓' : ''}
+                    </button>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="font-bold text-sm ${isDone ? 'line-through opacity-50' : ''} truncate">${c.name}</h3>
+                            <div class="flex gap-1 flex-shrink-0">
                                 <button onclick="explainTest('${c.name}')" class="text-[10px] bg-white border border-green-100 text-green-600 px-2 py-1 rounded-full hover:bg-green-50 transition-colors">✨ מה זה?</button>
+                                ${isCustom ? `<button onclick="deleteCustomCheck('${c.id}')" class="text-[10px] bg-red-50 border border-red-100 text-red-400 px-2 py-1 rounded-full hover:bg-red-100 transition-colors">✕</button>` : ''}
                             </div>
-                            <p class="text-[11px] text-green-600 font-semibold">${c.range} · ${c.deadline}</p>
                         </div>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                        <input type="date"
-                               onchange="updateDate('${c.id}', this.value)"
-                               value="${dateValue}"
-                               class="flex-1 bg-white border border-green-100 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-green-500">
-                        ${dateValue ? `
-                            <button onclick="addToCalendar('${c.name}', '${dateValue}')"
-                                    class="bg-blue-50 text-blue-600 p-2 rounded-xl text-lg hover:bg-blue-100 transition-colors" title="הוספה ליומן">📅</button>
-                        ` : ''}
+                        <p class="text-[11px] text-green-600 font-semibold">${c.range}${c.range && c.deadline ? ' · ' : ''}${c.deadline}</p>
                     </div>
                 </div>
-            `;
-        }).join('');
+                <div class="flex gap-2 items-center">
+                    <input type="date"
+                           onchange="updateDate('${c.id}', this.value)"
+                           value="${dateValue}"
+                           class="flex-1 bg-white border border-green-100 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-green-500">
+                    ${dateValue ? `
+                        <button onclick="addToCalendar('${c.name}', '${dateValue}')"
+                                class="bg-blue-50 text-blue-600 p-2 rounded-xl text-lg hover:bg-blue-100 transition-colors" title="הוספה ליומן">📅</button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderChecks() {
+        const container = document.getElementById('checks-container');
+        const builtIn = checksData[activeTab];
+        const custom = state.customChecks[activeTab] || [];
+
+        const builtInHTML = builtIn.map(c => renderCheckItem(c, false)).join('');
+        const customHTML = custom.length > 0
+            ? `<div class="border-t border-green-100 pt-3 mt-1">
+                <p class="text-[10px] text-green-500 font-bold uppercase mb-3">בדיקות שהוספת</p>
+                ${custom.map(c => renderCheckItem(c, true)).join('')}
+               </div>`
+            : '';
+
+        container.innerHTML = builtInHTML + customHTML;
     }
 
     function renderSummary() {
@@ -356,10 +434,15 @@
         checksData.forEach(tab => {
             tab.forEach(test => {
                 if (state.dates[test.id]) {
-                    appointments.push({
-                        name: test.name,
-                        date: state.dates[test.id]
-                    });
+                    appointments.push({ name: test.name, date: state.dates[test.id] });
+                }
+            });
+        });
+
+        Object.values(state.customChecks || {}).forEach(tabChecks => {
+            (tabChecks || []).forEach(test => {
+                if (state.dates[test.id]) {
+                    appointments.push({ name: test.name, date: state.dates[test.id] });
                 }
             });
         });
@@ -403,25 +486,28 @@
     }
 
     async function callGemini(query, systemPrompt = "You are a helpful pregnancy assistant.") {
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
 
         const payload = {
-            contents: [{ parts: [{ text: query }] }],
-            tools: [{ "google_search": {} }],
-            systemInstruction: {
-                parts: [{ text: systemPrompt }]
-            }
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: query }
+            ]
         };
 
         try {
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
-            return result.candidates?.[0]?.content?.parts?.[0]?.text || "מצטערת, משהו השתבש בחיבור לבינה המלאכותית.";
+            if (result.error) return `שגיאה: ${result.error.message}`;
+            return result.choices?.[0]?.message?.content || "מצטערת, משהו השתבש בחיבור לבינה המלאכותית.";
         } catch (error) {
             return "חלה שגיאה בתקשורת. ודאי שיש חיבור אינטרנט.";
         }
@@ -431,7 +517,7 @@
         const box = document.getElementById('insights-box');
         const weekStr = document.getElementById('stat-week').innerText;
         box.classList.remove('hidden');
-        box.innerHTML = `<div class="flex items-center gap-2 animate-pulse"><div class="w-2 h-2 bg-green-500 rounded-full"></div>אנחנו בודקים בגוגל מה קורה בשבוע ${weekStr}...</div>`;
+        box.innerHTML = `<div class="flex items-center gap-2 animate-pulse"><div class="w-2 h-2 bg-green-500 rounded-full"></div>בודקת מה קורה בשבוע ${weekStr}...</div>`;
 
         const prompt = `תני לי 3 טיפים קצרים וחשובים לאורטל שנמצאת בשבוע ${weekStr} של ההריון. התמקדי בתזונה, תופעות לוואי ובריאות. תכתבי בעברית ידידותית.`;
         const response = await callGemini(prompt, "את מומחית הריון ולידה שנותנת טיפים מבוססי מחקר ומעודדים.");
@@ -473,7 +559,7 @@
         const container = document.getElementById('chat-messages');
         const div = document.createElement('div');
         if (role === 'user') {
-            div.className = "bg-white border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none mr-8 shadow-sm self-end";
+            div.className = "bg-white border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none mr-8 shadow-sm";
         } else {
             div.className = "bg-green-100 text-green-800 p-3 rounded-2xl rounded-tr-none ml-8 shadow-sm";
         }
@@ -487,7 +573,7 @@
         appendMessage('ai', `אורטל, אני בודקת עבורך מה זה "${testName}"... 🔎`);
         document.getElementById('chat-loading').classList.remove('hidden');
 
-        const response = await callGemini(`תסבירי לי בקצרה מהי בדיקת "${testName}" בהריון.`, "את מומחית לליווי הריון.");
+        const response = await callGemini(`תסבירי לי בקצרה מהי בדיקת "${testName}" בהריון. תכתבי בעברית ובאופן ידידותי.`, "את מומחית לליווי הריון.");
 
         document.getElementById('chat-loading').classList.add('hidden');
         appendMessage('ai', response);
@@ -495,12 +581,12 @@
 
     function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "ortal_pregnancy_backup.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+        const a = document.createElement('a');
+        a.setAttribute("href", dataStr);
+        a.setAttribute("download", "ortal_pregnancy_backup.json");
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
     }
 
     function importData(event) {
